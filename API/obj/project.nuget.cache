@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "EsEItL0/pdI=",
+  "success": true,
+  "projectFilePath": "/Users/kongxiangyi/dog_clock/API/API.csproj",
+  "expectedPackageFiles": [
+    "/Users/kongxiangyi/.nuget/packages/microsoft.aspnetcore.openapi/9.0.0/microsoft.aspnetcore.openapi.9.0.0.nupkg.sha512",
+    "/Users/kongxiangyi/.nuget/packages/microsoft.openapi/1.6.17/microsoft.openapi.1.6.17.nupkg.sha512"
+  ],
+  "logs": []
+}
