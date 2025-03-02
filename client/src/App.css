@@ -52,3 +52,11 @@ body {
   font-weight: 400;
   font-style: normal;
 }
+
+.product-info h2 {
+  margin-bottom: 4px; /* 调小默认的下边距 */
+}
+
+.product-info p {
+  margin-top: 2px; /* 调小默认的上边距 */
+}
