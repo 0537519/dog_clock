@@ -15,6 +15,8 @@ interface ModalProps {
 }
 
 function ProductModal({ product, onClose }: ModalProps) {
+  const [showConfirm, setShowConfirm] = useState(false);
+
   // 根据产品类型返回对应的 Material Symbols 图标
   const getBonusIcon = (type: string) => {
     if (type === 'hunger') {
@@ -31,6 +33,21 @@ function ProductModal({ product, onClose }: ModalProps) {
       );
     }
     return null;
+  };
+
+  const handleConfirm = () => {
+    // 执行购买逻辑（如果有的话）
+    setShowConfirm(false);
+    onClose();  // 点击确认后关闭整个 modal
+  };
+
+  const handlePurchaseClick = () => {
+    setShowConfirm(true);
+  };
+
+
+  const handleCancel = () => {
+    setShowConfirm(false);
   };
 
   return (
@@ -56,10 +73,23 @@ function ProductModal({ product, onClose }: ModalProps) {
               </div>
             </div>
             <div className="modal-right-bottom">
-              <button className="modal-purchase">Buy Now</button>
+              <button className="modal-purchase" onClick={handlePurchaseClick}>
+                Buy Now
+              </button>
             </div>
           </div>
         </div>
+        {showConfirm && (
+          <div className="modal-confirm-overlay">
+            <div className="modal-confirm-content">
+              <div className="modal-confirm-text">Confirm purchase?</div>
+              <div className="modal-confirm-buttons">
+                <button className="confirm-button" onClick={handleConfirm}>Confirm</button>
+                <button className="cancel-button" onClick={handleCancel}>Cancel</button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -140,9 +170,7 @@ function Shop() {
                   <h2>{product.name}</h2>
                   <p>
                     ${product.price}
-                    <span className="bonus">
-                      {`+${product.bonus}`}
-                    </span>
+                    <span className="bonus">{`+${product.bonus}`}</span>
                   </p>
                 </div>
               </div>
@@ -177,9 +205,7 @@ function Shop() {
                   <h2>{product.name}</h2>
                   <p>
                     ${product.price}
-                    <span className="bonus">
-                      {`+${product.bonus}`}
-                    </span>
+                    <span className="bonus">{`+${product.bonus}`}</span>
                   </p>
                 </div>
               </div>
@@ -195,3 +221,4 @@ function Shop() {
 }
 
 export default Shop;
+
