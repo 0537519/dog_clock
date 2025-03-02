@@ -5,6 +5,7 @@ interface Product {
   name: string;
   price: number;
   type: string;
+  prictureUrl: string;  // 与后端保持一致（注意大小写）
 }
 
 function Shop() {
@@ -57,15 +58,21 @@ function Shop() {
         <div className="carousel">
           <div
             className="carousel-track"
-            style={{
-              transform: `translateX(-${hungerIndex * 220}px)`,
-            }}
+            style={{ transform: `translateX(-${hungerIndex * 220}px)` }}
           >
             {productsHunger.map((product, index) => (
               <div key={index} className="product-card">
-                <h2>{product.name}</h2>
-                <p>${product.price}</p>
-                <button>Add to Cart</button>
+                <div className="image-container">
+                  <img
+                    src={product.prictureUrl}
+                    alt={product.name}
+                    className="product-image"
+                  />
+                </div>
+                <div className="product-info">
+                  <h2>{product.name}</h2>
+                  <p>${product.price}</p>
+                </div>
               </div>
             ))}
           </div>
@@ -83,15 +90,21 @@ function Shop() {
         <div className="carousel">
           <div
             className="carousel-track"
-            style={{
-              transform: `translateX(-${moodIndex * 220}px)`,
-            }}
+            style={{ transform: `translateX(-${moodIndex * 220}px)` }}
           >
             {productsMood.map((product, index) => (
               <div key={index} className="product-card">
-                <h2>{product.name}</h2>
-                <p>${product.price}</p>
-                <button>Add to Cart</button>
+                <div className="image-container">
+                  <img
+                    src={product.prictureUrl}
+                    alt={product.name}
+                    className="product-image"
+                  />
+                </div>
+                <div className="product-info">
+                  <h2>{product.name}</h2>
+                  <p>${product.price}</p>
+                </div>
               </div>
             ))}
           </div>

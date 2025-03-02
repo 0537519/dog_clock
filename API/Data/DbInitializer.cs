@@ -25,7 +25,7 @@ public class DbInitializer
         type = "hunger",  
         bonus = 10,         
         Price = 5,           
-        PrictureUrl = "/Users/kongxiangyi/dog_clock/assets/images/author.jpg"
+        PrictureUrl = "/assets/images/author.jpg"
     },
     new() {
         Id = 2,
@@ -33,7 +33,7 @@ public class DbInitializer
         type = "hunger",     
         bonus = 20,         
         Price = 8,
-        PrictureUrl = "/Users/kongxiangyi/dog_clock/assets/images/author.jpg"
+        PrictureUrl = "/assets/images/author.jpg"
     },
     new() {
         Id = 3,
@@ -41,7 +41,7 @@ public class DbInitializer
         type = "mood",      
         bonus = 15,         
         Price = 6,
-        PrictureUrl = "/Users/kongxiangyi/dog_clock/assets/images/author.jpg"
+        PrictureUrl = "/assets/images/author.jpg"
     },
     new() {
         Id = 4,
@@ -49,7 +49,7 @@ public class DbInitializer
         type = "hunger",      
         bonus = 12,          
         Price = 7,
-        PrictureUrl = "/Users/kongxiangyi/dog_clock/assets/images/treat.jpg"
+        PrictureUrl ="/assets/images/author.jpg"
     },
     new() {
         Id = 5,
@@ -57,7 +57,7 @@ public class DbInitializer
         type = "mood",       
         bonus = 18,           
         Price = 9,
-        PrictureUrl = "/Users/kongxiangyi/dog_clock/assets/images/toy.jpg"
+        PrictureUrl = "/assets/images/author.jpg"
     },
     new() {
         Id = 6,
@@ -65,7 +65,7 @@ public class DbInitializer
         type = "hunger",      
         bonus = 25,           
         Price = 10,
-        PrictureUrl = "/Users/kongxiangyi/dog_clock/assets/images/broth.jpg"
+        PrictureUrl = "/assets/images/author.jpg"
     },
     new() {
         Id = 7,
@@ -73,7 +73,7 @@ public class DbInitializer
         type = "hunger",      
         bonus = 15,           
         Price = 6,
-        PrictureUrl = "/Users/kongxiangyi/dog_clock/assets/images/kibble.jpg"
+        PrictureUrl = "/assets/images/author.jpg"
     },
     new() {
         Id = 8,
@@ -81,7 +81,7 @@ public class DbInitializer
         type = "mood",        
         bonus = 20,           
         Price = 8,
-        PrictureUrl = "/Users/kongxiangyi/dog_clock/assets/images/frisbee.jpg"
+        PrictureUrl = "/assets/images/author.jpg"
     },
     new() {
         Id = 9,
@@ -89,7 +89,7 @@ public class DbInitializer
         type = "hunger",      
         bonus = 18,           
         Price = 7,
-        PrictureUrl = "/Users/kongxiangyi/dog_clock/assets/images/snack.jpg"
+        PrictureUrl = "/assets/images/author.jpg"
     },
     new() {
         Id = 10,
@@ -97,7 +97,7 @@ public class DbInitializer
         type = "mood",        
         bonus = 16,         
         Price = 7,
-        PrictureUrl = "/Users/kongxiangyi/dog_clock/assets/images/happy_frisbee.jpg"
+        PrictureUrl = "/assets/images/author.jpg"
     },
     new() {
         Id = 11,
@@ -105,7 +105,7 @@ public class DbInitializer
         type = "mood",       
         bonus = 17,           
         Price = 8,
-        PrictureUrl = "/Users/kongxiangyi/dog_clock/assets/images/cheerful_squeak.jpg"
+        PrictureUrl = "/assets/images/author.jpg"
     },
     new() {
         Id = 12,
@@ -113,7 +113,7 @@ public class DbInitializer
         type = "mood",       
         bonus = 15,           
         Price = 5,
-        PrictureUrl = "/Users/kongxiangyi/dog_clock/assets/images/joyful_ribbon.jpg"
+        PrictureUrl = "/assets/images/author.jpg"
     }
         };
         context.Products.AddRange(products);
