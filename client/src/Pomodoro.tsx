@@ -24,6 +24,49 @@ const Pomodoro: React.FC = () => {
   const [selectedTag, setSelectedTag] = useState("Study");
   const [pomodoroId, setPomodoroId] = useState<number | null>(null);
 
+  useEffect(() => {
+    const savedState = sessionStorage.getItem('pomodoroState');
+    if (savedState) {
+      const { 
+        savedAccumulated, 
+        savedIsRunning, 
+        savedStartTime,
+        savedSelectedTag,
+        savedPomodoroId 
+      } = JSON.parse(savedState);
+      
+      if (savedIsRunning) {
+        const elapsed = (Date.now() - savedStartTime) / 1000;
+        const newAccumulated = Math.max(savedAccumulated - elapsed * 0.05, 0);
+        
+        setAccumulated(newAccumulated);
+        setIsRunning(newAccumulated > 0);
+        setSelectedTag(savedSelectedTag);
+        setPomodoroId(savedPomodoroId);
+        
+        if (newAccumulated <= 0 && savedPomodoroId !== null) {
+          updatePomodoroSession(savedPomodoroId, true);
+        }
+      }
+    }
+  }, []);
+
+  // 新增持久化状态effect
+  useEffect(() => {
+    if (isRunning || pomodoroId !== null) {
+      const stateToSave = {
+        savedAccumulated: accumulated,
+        savedIsRunning: isRunning,
+        savedStartTime: Date.now(),
+        savedSelectedTag: selectedTag,
+        savedPomodoroId: pomodoroId
+      };
+      sessionStorage.setItem('pomodoroState', JSON.stringify(stateToSave));
+    } else {
+      sessionStorage.removeItem('pomodoroState');
+    }
+  }, [accumulated, isRunning, selectedTag, pomodoroId]);
+
   const { createPomodoroSession, updatePomodoroSession } = usePomodoroController(); 
 
   const currentColor =
@@ -102,6 +145,7 @@ const Pomodoro: React.FC = () => {
       const timer = setInterval(() => {
         setAccumulated((prev) => {
           if (prev <= 0.05) {
+            sessionStorage.removeItem('pomodoroState');
             clearInterval(timer);
             setIsRunning(false);
 
@@ -121,6 +165,7 @@ const Pomodoro: React.FC = () => {
   const handleStartEnd = async () => {
     if (isRunning) {
       //
+      sessionStorage.removeItem('pomodoroState'); 
       if (pomodoroId !== null) {
         await updatePomodoroSession(pomodoroId, false);
       }
