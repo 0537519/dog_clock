@@ -104,6 +104,11 @@ const Pomodoro: React.FC = () => {
           if (prev <= 0.05) {
             clearInterval(timer);
             setIsRunning(false);
+
+            if (pomodoroId !== null) {
+              updatePomodoroSession(pomodoroId, true);
+            }
+
             return 0;
           }
           return prev - 0.05;
