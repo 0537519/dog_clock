@@ -62,15 +62,22 @@
   }
   
   .start-button:hover {
-    background-color: #333;
+    background-color: #000000;
   }
   
   .tag-select {
     font-size: 20px;
-    border: none;
-    background: transparent;
+    border: none !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    appearance: none;             
+    -webkit-appearance: none;     
+    -moz-appearance: none;        
     outline: none;
-    color: #333;
+    color: #000;
     cursor: pointer;
   }
+  
+  
+  
   
