@@ -2,6 +2,7 @@ using API.Data;
 using API.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+
 namespace API.Controllers
 {
     [Route("api/[controller]")]
@@ -9,6 +10,7 @@ namespace API.Controllers
     public class PomodoroController : ControllerBase
     {
         private readonly StoreContext _context;
+
         public PomodoroController(StoreContext context)
         {
             _context = context;
@@ -32,7 +34,6 @@ namespace API.Controllers
         }
 
         // POST: api/Pomodoro
-        // 用于新增 PomodoroSession，输入为 Duration (TimeSpan) 和 TaskTag (string)
         [HttpPost]
         public async Task<ActionResult<PomodoroSession>> CreatePomodoroSession([FromBody] PomodoroSessionCreateRequest request)
         {
@@ -41,7 +42,7 @@ namespace API.Controllers
                 TaskTag = request.TaskTag,
                 StartTime = DateTime.Now,
                 Duration = request.Duration,
-                EndTime = default(DateTime), // 为空，表示未结束
+                EndTime = default(DateTime),
                 IsCompleted = false,
                 RewardPoints = 0
             };
@@ -51,11 +52,34 @@ namespace API.Controllers
 
             return CreatedAtAction(nameof(GetPomodoroSession), new { id = session.Id }, session);
         }
+
+        // PUT: api/Pomodoro/{id}
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdatePomodoroSession(int id, [FromBody] UpdatePomodoroSessionRequest request)
+        {
+            var session = await _context.pomodoroSessions.FindAsync(id);
+            if (session == null)
+                return NotFound();
+
+            session.EndTime = DateTime.Now;
+            session.IsCompleted = request.IsCompleted;
+            session.RewardPoints = (int)(session.EndTime - session.StartTime).TotalMinutes * 2;
+
+            _context.pomodoroSessions.Update(session);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
     }
 
     public class PomodoroSessionCreateRequest
     {
         public required string TaskTag { get; set; }
         public TimeSpan Duration { get; set; }
+    }
+
+    public class UpdatePomodoroSessionRequest
+    {
+        public bool IsCompleted { get; set; }
     }
 }
