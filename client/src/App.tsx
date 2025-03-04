@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import './App.css';
 import Shop from './Shop';
+import Pomodoro from './Pomodoro';
 
 function Home() {
   return (
@@ -17,7 +18,7 @@ function App() {
       <div className="app-container">
         <div className="top-bar">
           <Link className="poppins-regular nav-item" to="/">Home</Link>
-          <Link className="poppins-regular nav-item" to="/">Pomodoro</Link>
+          <Link className="poppins-regular nav-item" to="/pomodoro">Pomodoro</Link>
           <Link className="poppins-regular nav-item" to="/">Task Manager</Link>
           <Link className="poppins-regular nav-item" to="/shop">Shop</Link>
           <Link className="poppins-regular nav-item" to="/">Settings</Link>
@@ -26,6 +27,7 @@ function App() {
 
         <Routes>
           <Route path="/shop" element={<Shop />} />
+          <Route path="/pomodoro" element={<Pomodoro />} />
           <Route path="/" element={<Home />} />
         </Routes>
 
