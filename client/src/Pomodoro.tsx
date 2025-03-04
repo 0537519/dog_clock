@@ -22,8 +22,9 @@ const Pomodoro: React.FC = () => {
   const [dragging, setDragging] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
   const [selectedTag, setSelectedTag] = useState("Study");
+  const [pomodoroId, setPomodoroId] = useState<number | null>(null);
 
-  const { createPomodoroSession } = usePomodoroController(); 
+  const { createPomodoroSession, updatePomodoroSession } = usePomodoroController(); 
 
   const currentColor =
     tagOptions.find((option) => option.label === selectedTag)?.color ||
@@ -114,16 +115,25 @@ const Pomodoro: React.FC = () => {
 
   const handleStartEnd = async () => {
     if (isRunning) {
-      // End 被点击：重置状态
+      //
+      if (pomodoroId !== null) {
+        await updatePomodoroSession(pomodoroId, false);
+      }
+  
+      // 重置状态
       setAccumulated(0);
       setIsRunning(false);
+      setPomodoroId(null); // 
     } else {
-      // Start 被点击：调用 API 创建 Pomodoro 任务并开始倒计时
+     
       if (minutes > 0) {
-        await createPomodoroSession(selectedTag, minutes); // 调用 API 创建 PomodoroSession
+        const session = await createPomodoroSession(selectedTag, minutes);
+        if (session && session.id) {
+          setPomodoroId(session.id); //
+        }
         setIsRunning(true);
       } else {
-        alert("请选择至少 1 分钟的时间");
+        alert("At least 1 min.");
       }
     }
   };
