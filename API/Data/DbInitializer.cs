@@ -118,5 +118,17 @@ public class DbInitializer
         };
         context.Products.AddRange(products);
         context.SaveChanges();
+
+        if(context.Users.Any()) return;
+        var user=new List<User>
+        {
+            new(){
+                Id=1,
+                Name="master",
+                Balance=0
+            }
+        };
+        context.Users.AddRange(user);
+        context.SaveChanges();
     }
 }

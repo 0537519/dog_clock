@@ -2,7 +2,7 @@ namespace API.Entities;
 
 public class Pet
 {
-    public int PetId { get; set; }
+    public int Id { get; set; }
     public required string Name { get; set; }
     public int Level { get; set; }
     public int Exp { get; set; }

@@ -2,7 +2,7 @@ namespace API.Entities;
 
 public class PomodoroSession
 {
-    public int SessionId { get; set; }
+    public int Id { get; set; }
     public required string TaskTag { get; set; }
     public DateTime StartTime { get; set; }
     public DateTime EndTime { get; set; }

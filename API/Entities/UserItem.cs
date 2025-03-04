@@ -2,7 +2,7 @@ namespace API.Entities;
 
 public class UserItem
 {
-    public int ItemId { get; set; }
+    public int Id { get; set; }
     public required string Name { get; set; }
     public required string type { get; set; }
     public int bonus { get; set; }

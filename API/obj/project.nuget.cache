@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "32JjW6gvn7E=",
+  "dgSpecHash": "YTlshDRMceE=",
   "success": true,
   "projectFilePath": "/Users/kongxiangyi/dog_clock/API/API.csproj",
   "expectedPackageFiles": [
@@ -33,9 +33,13 @@
     "/Users/kongxiangyi/.nuget/packages/microsoft.extensions.options/9.0.0/microsoft.extensions.options.9.0.0.nupkg.sha512",
     "/Users/kongxiangyi/.nuget/packages/microsoft.extensions.primitives/9.0.0/microsoft.extensions.primitives.9.0.0.nupkg.sha512",
     "/Users/kongxiangyi/.nuget/packages/mono.texttemplating/3.0.0/mono.texttemplating.3.0.0.nupkg.sha512",
+    "/Users/kongxiangyi/.nuget/packages/sqlite-net-sqlcipher/1.9.172/sqlite-net-sqlcipher.1.9.172.nupkg.sha512",
+    "/Users/kongxiangyi/.nuget/packages/sqlitepclraw.bundle_e_sqlcipher/2.1.2/sqlitepclraw.bundle_e_sqlcipher.2.1.2.nupkg.sha512",
     "/Users/kongxiangyi/.nuget/packages/sqlitepclraw.bundle_e_sqlite3/2.1.10/sqlitepclraw.bundle_e_sqlite3.2.1.10.nupkg.sha512",
     "/Users/kongxiangyi/.nuget/packages/sqlitepclraw.core/2.1.10/sqlitepclraw.core.2.1.10.nupkg.sha512",
+    "/Users/kongxiangyi/.nuget/packages/sqlitepclraw.lib.e_sqlcipher/2.1.2/sqlitepclraw.lib.e_sqlcipher.2.1.2.nupkg.sha512",
     "/Users/kongxiangyi/.nuget/packages/sqlitepclraw.lib.e_sqlite3/2.1.10/sqlitepclraw.lib.e_sqlite3.2.1.10.nupkg.sha512",
+    "/Users/kongxiangyi/.nuget/packages/sqlitepclraw.provider.e_sqlcipher/2.1.2/sqlitepclraw.provider.e_sqlcipher.2.1.2.nupkg.sha512",
     "/Users/kongxiangyi/.nuget/packages/sqlitepclraw.provider.e_sqlite3/2.1.10/sqlitepclraw.provider.e_sqlite3.2.1.10.nupkg.sha512",
     "/Users/kongxiangyi/.nuget/packages/system.codedom/6.0.0/system.codedom.6.0.0.nupkg.sha512",
     "/Users/kongxiangyi/.nuget/packages/system.collections.immutable/7.0.0/system.collections.immutable.7.0.0.nupkg.sha512",
