@@ -6,7 +6,6 @@ export const usePomodoroController = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // 获取所有 PomodoroSessions
     const getPomodoroSessions = async () => {
         try {
             setLoading(true);
@@ -38,7 +37,6 @@ export const usePomodoroController = () => {
         }
     };
 
-    // 创建一个新的 PomodoroSession
     const createPomodoroSession = async (taskTag: string, durationMinutes: number) => {
         try {
             setLoading(true);

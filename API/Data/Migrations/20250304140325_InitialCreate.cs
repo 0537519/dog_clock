@@ -18,14 +18,16 @@ namespace API.Data.Migrations
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     Name = table.Column<string>(type: "TEXT", nullable: false),
-                    Level = table.Column<int>(type: "INTEGER", nullable: false),
-                    Exp = table.Column<int>(type: "INTEGER", nullable: false),
                     Hunger = table.Column<int>(type: "INTEGER", nullable: false),
                     Mood = table.Column<int>(type: "INTEGER", nullable: false),
                     IsHealthy = table.Column<bool>(type: "INTEGER", nullable: false),
                     IsDead = table.Column<bool>(type: "INTEGER", nullable: false),
                     Birthday = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    Age = table.Column<TimeSpan>(type: "TEXT", nullable: false)
+                    Age = table.Column<TimeSpan>(type: "TEXT", nullable: false),
+                    Last_feed = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    Last_play = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    UnhealthyTime = table.Column<TimeSpan>(type: "TEXT", nullable: false),
+                    DeadAge = table.Column<decimal>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {

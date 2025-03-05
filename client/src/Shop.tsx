@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import "./Shop.css";
+import { LuBone } from "react-icons/lu";
+import { FaRegSmile } from "react-icons/fa";
 
 interface Product {
   name: string;
@@ -17,12 +19,12 @@ interface ModalProps {
 function getBonusIcon(type: string) {
   if (type === "hunger") {
     return (
-      <span className="material-symbols-outlined bonus-icon">pet_supplies</span>
+      <span className="material-symbols-outlined bonus-icon"><LuBone/></span>
     );
   } else if (type === "mood") {
     return (
       <span className="material-symbols-outlined bonus-icon">
-        sentiment_very_satisfied
+        <FaRegSmile/>
       </span>
     );
   }

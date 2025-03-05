@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Data.Migrations
 {
     [DbContext(typeof(StoreContext))]
-    [Migration("20250302053852_InitialCreate")]
+    [Migration("20250304140325_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -32,8 +32,8 @@ namespace API.Data.Migrations
                     b.Property<DateTime>("Birthday")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("Exp")
-                        .HasColumnType("INTEGER");
+                    b.Property<decimal>("DeadAge")
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("Hunger")
                         .HasColumnType("INTEGER");
@@ -44,14 +44,20 @@ namespace API.Data.Migrations
                     b.Property<bool>("IsHealthy")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("Level")
-                        .HasColumnType("INTEGER");
+                    b.Property<DateTime>("Last_feed")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("Last_play")
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("Mood")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<TimeSpan>("UnhealthyTime")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
