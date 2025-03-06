@@ -1,5 +1,7 @@
 using API.Data;
+using API.Entities;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers
 {
@@ -15,6 +17,7 @@ namespace API.Controllers
 
             return Ok(user.Balance);
         }
+        
         [HttpGet("name/{id}")]
         public async Task<ActionResult<string>> GetUserName(int id)
         {
@@ -61,6 +64,30 @@ namespace API.Controllers
             user.Balance -= amount;
             await context.SaveChangesAsync();
             return Ok($"Balance decreased by {amount}. New balance: {user.Balance}");
+        }
+
+        [HttpDelete("consume/{id}")]
+        public async Task<IActionResult> ConsumeItem(int id)
+        {
+            // 使用 FirstOrDefaultAsync 确保能正确获取
+            var item = await context.userItems.FirstOrDefaultAsync(i => i.Id == id);
+            if (item == null)
+            {
+                return NotFound("Item not found");
+            }
+
+            if (item.Quantity > 1)
+            {
+                item.Quantity -= 1;
+            }
+            else
+            {
+                context.userItems.Remove(item);
+                context.Entry(item).State = EntityState.Deleted;
+            }
+
+            await context.SaveChangesAsync();
+            return Ok("Item consumed successfully.");
         }
     }
 }

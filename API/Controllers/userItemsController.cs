@@ -24,7 +24,7 @@ namespace API.Controllers
             return Ok(item);
         }
 
-         [HttpPost("purchase")]
+        [HttpPost("purchase")]
         public async Task<ActionResult> PurchaseProduct([FromBody] Product product)
         {
             if (product == null)
@@ -37,10 +37,8 @@ namespace API.Controllers
             }
             else
             {
-                int newId = await context.userItems.CountAsync() + 1;
                 var newItem = new UserItem
                 {
-                    Id = newId,
                     Name = product.Name,
                     type = product.type,
                     bonus = product.bonus,
@@ -54,5 +52,28 @@ namespace API.Controllers
             await context.SaveChangesAsync();
             return Ok($"Product '{product.Name}' purchased successfully.");
         }
+
+        [HttpDelete("consume/{id}")]
+        public async Task<IActionResult> ConsumeItem(int id)
+        {
+            var item = await context.userItems.FindAsync(id);
+            if (item == null)
+            {
+                return NotFound("Item not found");
+            }
+
+            if (item.Quantity > 1)
+            {
+                item.Quantity -= 1;
+            }
+            else
+            {
+                context.userItems.Remove(item);
+            }
+
+            await context.SaveChangesAsync();
+            return Ok("Item consumed successfully.");
+        }
+
     }
 }

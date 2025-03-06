@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import "./Shop.css";
 import { LuBone } from "react-icons/lu";
 import { FaRegSmile } from "react-icons/fa";
+import { purchaseProduct} from "./hook/useUserItemsController";
 
 interface Product {
   name: string;
@@ -19,12 +20,14 @@ interface ModalProps {
 function getBonusIcon(type: string) {
   if (type === "hunger") {
     return (
-      <span className="material-symbols-outlined bonus-icon"><LuBone/></span>
+      <span className="material-symbols-outlined bonus-icon">
+        <LuBone />
+      </span>
     );
   } else if (type === "mood") {
     return (
       <span className="material-symbols-outlined bonus-icon">
-        <FaRegSmile/>
+        <FaRegSmile />
       </span>
     );
   }
@@ -37,35 +40,11 @@ function ProductModal({ product, onClose }: ModalProps) {
 
   const handleConfirmPurchase = async () => {
     try {
-      const balanceResponse = await fetch(
-        "https://localhost:7028/api/user/balance/decrease/1",
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(product.price),
-        }
-      );
-
-      if (!balanceResponse.ok) {
-        setShowInsufficient(true);
-        return;
-      }
-
-      const purchaseResponse = await fetch(
-        "https://localhost:7028/api/useritems/purchase",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(product),
-        }
-      );
-
-      if (!purchaseResponse.ok) {
-        console.error("Purchase failed");
-      }
-
+      const result = await purchaseProduct(product);
+      console.log(result);
       onClose();
-    } catch {
+    } catch (error) {
+      console.error("Purchase failed", error);
       setShowInsufficient(true);
     }
   };
@@ -149,7 +128,6 @@ function ProductModal({ product, onClose }: ModalProps) {
       )}
     </>
   );
-  
 }
 
 function Shop() {
@@ -162,13 +140,13 @@ function Shop() {
     fetch("https://localhost:7028/api/products")
       .then((response) => {
         if (!response.ok) {
-          throw new Error(`网络响应错误: ${response.status}`);
+          throw new Error(`Network error: ${response.status}`);
         }
         return response.json();
       })
       .then((data) => setProducts(data))
       .catch((error) => {
-        console.error("获取产品数据失败：", error);
+        console.error("Failed to fetch products:", error);
       });
   }, []);
 
@@ -180,7 +158,7 @@ function Shop() {
   };
 
   const handleHungerNext = () => {
-    const maxStart = Math.max(productsHunger.length - 3, 0);
+    const maxStart = Math.max(productsHunger.length - 2, 0);
     setHungerIndex((prev) => Math.min(prev + 1, maxStart));
   };
 
@@ -189,7 +167,7 @@ function Shop() {
   };
 
   const handleMoodNext = () => {
-    const maxStart = Math.max(productsMood.length - 3, 0);
+    const maxStart = Math.max(productsMood.length - 2, 0);
     setMoodIndex((prev) => Math.min(prev + 1, maxStart));
   };
 

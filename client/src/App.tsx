@@ -15,12 +15,14 @@ import {
   calculateHealthy,
   calculateUnhealthy,
 } from "./hook/usePetsController";
+import { consumeItem } from "./hook/useUserItemsController";
 import { MdPets } from "react-icons/md";
 import { LuBone } from "react-icons/lu";
 import { FaRegSmile } from "react-icons/fa";
 import { GiHealthCapsule } from "react-icons/gi";
 import authorImage from "./assets/author.jpg";
 
+// 定义 UserItem 接口（注意属性名与后端返回的 JSON 保持一致）
 interface UserItem {
   id: number;
   name: string;
@@ -32,7 +34,6 @@ interface UserItem {
 }
 
 function Home() {
-  // 现有状态
   const [showAdoptModal, setShowAdoptModal] = useState<boolean>(false);
   const [showNameModal, setShowNameModal] = useState<boolean>(false);
   const [dogName, setDogName] = useState<string>("");
@@ -46,7 +47,6 @@ function Home() {
   const [showBoneModal, setShowBoneModal] = useState<boolean>(false);
   const [backpackItems, setBackpackItems] = useState<UserItem[]>([]);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
-
   // 新增：用于使用物品确认窗口
   const [showUseModal, setShowUseModal] = useState<boolean>(false);
   const [selectedItem, setSelectedItem] = useState<UserItem | null>(null);
@@ -55,12 +55,12 @@ function Home() {
     return type.toLowerCase() === "hunger" ? <LuBone /> : "";
   };
 
+  // 当点击物品图片时，显示使用确认弹窗
   const handleUseItem = (item: UserItem) => {
     setSelectedItem(item);
     setShowUseModal(true);
   };
 
-  // 现有 animateImage、handleDogInfoClick、handleBoneClick 等代码保持不变
   const animateImage = () => {
     return new Promise((resolve) => {
       setShowAnimation(true);
@@ -326,7 +326,7 @@ function Home() {
           </div>
         </div>
       )}
-      {/* 新增：点击骨头图标弹出的空白弹窗，显示背包中所有 type 为 "hunger" 的物品信息 */}
+
       {showBoneModal && (
         <div className="modal-overlay" onClick={() => setShowBoneModal(false)}>
           <div
@@ -389,6 +389,7 @@ function Home() {
           </div>
         </div>
       )}
+
       {showUseModal && selectedItem && (
         <div className="modal-overlay" onClick={() => setShowUseModal(false)}>
           <div
@@ -405,8 +406,15 @@ function Home() {
             <button
               className="modal-button"
               style={{ display: "block", margin: "0 auto" }}
-              onClick={() => {
-                console.log("Use item confirmed:", selectedItem);
+              onClick={async () => {
+                try {
+                  const result = await consumeItem(selectedItem.id);
+                  console.log("Consume result:", result);
+                  // 刷新背包数据
+                  await handleBoneClick();
+                } catch (error) {
+                  console.error("Failed to consume item:", error);
+                }
                 setShowUseModal(false);
               }}
             >
@@ -415,6 +423,7 @@ function Home() {
           </div>
         </div>
       )}
+
       {showAnimation && (
         <div
           className="animation-overlay"
@@ -505,3 +514,4 @@ function App() {
 }
 
 export default App;
+
