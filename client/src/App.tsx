@@ -15,7 +15,11 @@ import {
   calculateHealthy,
   calculateUnhealthy,
 } from "./hook/usePetsController";
-import { consumeItem, increaseHunger } from "./hook/useUserItemsController";
+import {
+  consumeItem,
+  increaseHunger,
+  increaseMood,
+} from "./hook/useUserItemsController";
 import { MdPets } from "react-icons/md";
 import { LuBone } from "react-icons/lu";
 import { FaRegSmile } from "react-icons/fa";
@@ -47,18 +51,34 @@ function Home() {
   const [showBoneModal, setShowBoneModal] = useState<boolean>(false);
   const [backpackItems, setBackpackItems] = useState<UserItem[]>([]);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
-  // 新增：用于使用物品确认窗口
+
+  // 新增：用于使用背包物品确认窗口（hunger 物品使用，与骨头图标相关）
   const [showUseModal, setShowUseModal] = useState<boolean>(false);
   const [selectedItem, setSelectedItem] = useState<UserItem | null>(null);
+
+  // 新增：用于 mood 物品相关
+  const [showSmileModal, setShowSmileModal] = useState<boolean>(false);
+  const [moodItems, setMoodItems] = useState<UserItem[]>([]);
+  const [moodCurrentIndex, setMoodCurrentIndex] = useState<number>(0);
+  const [showUseSmileModal, setShowUseSmileModal] = useState<boolean>(false);
+  const [selectedSmileItem, setSelectedSmileItem] = useState<UserItem | null>(
+    null
+  );
 
   const getBonusIcon = (type: string) => {
     return type.toLowerCase() === "hunger" ? <LuBone /> : "";
   };
 
-  // 当点击物品图片时，显示使用确认弹窗
+  // 当点击 hunger 物品图片时，显示使用确认弹窗
   const handleUseItem = (item: UserItem) => {
     setSelectedItem(item);
     setShowUseModal(true);
+  };
+
+  // 当点击 mood 物品图片时，显示使用确认弹窗
+  const handleUseSmileItem = (item: UserItem) => {
+    setSelectedSmileItem(item);
+    setShowUseSmileModal(true);
   };
 
   const animateImage = () => {
@@ -141,6 +161,22 @@ function Home() {
     } catch (error) {
       console.error("Error fetching backpack items:", error);
       setBackpackItems([]);
+    }
+  };
+
+  const handleSmileClick = async () => {
+    setShowSmileModal(true);
+    try {
+      const response = await fetch("https://localhost:7028/api/UserItems");
+      if (!response.ok) throw new Error("Failed to fetch backpack items");
+      const items: UserItem[] = await response.json();
+      const filtered = items.filter(
+        (item) => item.type.toLowerCase() === "mood"
+      );
+      setMoodItems(filtered);
+    } catch (error) {
+      console.error("Error fetching mood backpack items:", error);
+      setMoodItems([]);
     }
   };
 
@@ -392,6 +428,73 @@ function Home() {
         </div>
       )}
 
+      {showSmileModal && (
+        <div className="modal-overlay" onClick={() => setShowSmileModal(false)}>
+          <div
+            className="modal-content bone-modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              className="modal-close"
+              onClick={() => setShowSmileModal(false)}
+            >
+              ×
+            </button>
+            <div className="bone-slider-container">
+              <div
+                className="bone-carousel-track"
+                style={{
+                  width: `${moodItems.length * 250}px`,
+                  transform: `translateX(-${moodCurrentIndex * 250}px)`,
+                }}
+              >
+                {moodItems.map((item) => (
+                  <div key={item.id} className="bone-product-card">
+                    <div
+                      className="bone-modal-image-container"
+                      onClick={() => handleUseSmileItem(item)}
+                    >
+                      <img
+                        src={item.prictureUrl}
+                        alt={item.name}
+                        className="bone-modal-image"
+                      />
+                      <div className="bone-modal-info">
+                        <h3 className="bone-modal-product-name">{item.name}</h3>
+                        <div className="bone-modal-bonus">
+                          Bonus: +{item.bonus} {getBonusIcon(item.type)}
+                        </div>
+                        <div className="bone-modal-quantity">
+                          Qty: {item.quantity}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <button
+                className="bone-slider-btn left"
+                onClick={() =>
+                  setMoodCurrentIndex(Math.max(0, moodCurrentIndex - 1))
+                }
+              >
+                {"<"}
+              </button>
+              <button
+                className="bone-slider-btn right"
+                onClick={() =>
+                  setMoodCurrentIndex(
+                    Math.min(moodItems.length - 2, moodCurrentIndex + 1)
+                  )
+                }
+              >
+                {">"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showUseModal && selectedItem && (
         <div className="modal-overlay" onClick={() => setShowUseModal(false)}>
           <div
@@ -419,12 +522,9 @@ function Home() {
               style={{ display: "block", margin: "0 auto" }}
               onClick={async () => {
                 try {
-                  // 调用 consumeItem 消耗物品
                   const result = await consumeItem(selectedItem.id);
                   console.log("Consume result:", result);
-                  // 刷新背包数据
                   await handleBoneClick();
-                  // 调用 increaseHunger 增加宠物 Hunger，使用消耗物品的 bonus 值作为增加量
                   if (alivePet) {
                     const newHunger = await increaseHunger(
                       alivePet.id,
@@ -437,6 +537,60 @@ function Home() {
                   console.error("Failed to consume item:", error);
                 }
                 setShowUseModal(false);
+              }}
+            >
+              Confirm
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showUseSmileModal && selectedSmileItem && (
+        <div
+          className="modal-overlay"
+          onClick={() => setShowUseSmileModal(false)}
+        >
+          <div
+            className="modal-content"
+            onClick={(e) => e.stopPropagation()}
+            style={{ width: "400px", height: "200px" }}
+          >
+            <button
+              className="modal-close"
+              onClick={() => setShowUseSmileModal(false)}
+            >
+              ×
+            </button>
+            <p
+              style={{
+                textAlign: "center",
+                fontSize: "20px",
+                margin: "40px 0",
+              }}
+            >
+              Are you sure you want to use this item?
+            </p>
+            <button
+              className="modal-button"
+              style={{ display: "block", margin: "0 auto" }}
+              onClick={async () => {
+                try {
+                  const result = await consumeItem(selectedSmileItem.id);
+                  console.log("Consume result:", result);
+                  // 刷新 mood 背包数据
+                  await handleSmileClick();
+                  if (alivePet) {
+                    const newMood = await increaseMood(
+                      alivePet.id,
+                      selectedSmileItem.bonus
+                    );
+                    console.log("New Mood:", newMood);
+                    setAlivePet({ ...alivePet, mood: newMood });
+                  }
+                } catch (error) {
+                  console.error("Failed to consume mood item:", error);
+                }
+                setShowUseSmileModal(false);
               }}
             >
               Confirm
@@ -481,7 +635,7 @@ function Home() {
               <LuBone />
             </span>
           </div>
-          <div className="circle">
+          <div className="circle" onClick={handleSmileClick}>
             <span className="material-symbols-outlined ent_very_satisfied">
               <FaRegSmile />
             </span>
