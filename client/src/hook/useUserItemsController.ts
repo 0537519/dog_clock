@@ -1,4 +1,3 @@
-// hook/useUserItemsController.ts
 import { useState, useEffect } from "react";
 
 export interface UserItem {
@@ -21,6 +20,7 @@ export interface Product {
 }
 
 const API_BASE_URL = "https://localhost:7028/api/userItems";
+const PETS_API_BASE_URL = "https://localhost:7028/api/Pets";
 
 export function useUserItems() {
   const [userItems, setUserItems] = useState<UserItem[]>([]);
@@ -108,3 +108,26 @@ export async function consumeItem(id: number): Promise<string> {
   return response.text();
 }
 
+export async function increaseHunger(id: number, amount: number): Promise<number> {
+  const response = await fetch(`${PETS_API_BASE_URL}/${id}/increase-hunger`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(amount),
+  });
+  if (!response.ok) {
+    throw new Error("Failed to increase hunger");
+  }
+  return response.json();
+}
+
+export async function increaseMood(id: number, amount: number): Promise<number> {
+  const response = await fetch(`${PETS_API_BASE_URL}/${id}/increase-mood`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(amount),
+  });
+  if (!response.ok) {
+    throw new Error("Failed to increase mood");
+  }
+  return response.json();
+}

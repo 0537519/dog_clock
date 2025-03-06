@@ -15,7 +15,7 @@ import {
   calculateHealthy,
   calculateUnhealthy,
 } from "./hook/usePetsController";
-import { consumeItem } from "./hook/useUserItemsController";
+import { consumeItem, increaseHunger } from "./hook/useUserItemsController";
 import { MdPets } from "react-icons/md";
 import { LuBone } from "react-icons/lu";
 import { FaRegSmile } from "react-icons/fa";
@@ -380,7 +380,9 @@ function Home() {
               <button
                 className="bone-slider-btn right"
                 onClick={() =>
-                  setCurrentIndex(Math.min(backpackItems.length - 2, currentIndex + 1))
+                  setCurrentIndex(
+                    Math.min(backpackItems.length - 2, currentIndex + 1)
+                  )
                 }
               >
                 {">"}
@@ -397,10 +399,19 @@ function Home() {
             onClick={(e) => e.stopPropagation()}
             style={{ width: "400px", height: "200px" }}
           >
-            <button className="modal-close" onClick={() => setShowUseModal(false)}>
+            <button
+              className="modal-close"
+              onClick={() => setShowUseModal(false)}
+            >
               ×
             </button>
-            <p style={{ textAlign: "center", fontSize: "20px", margin: "40px 0" }}>
+            <p
+              style={{
+                textAlign: "center",
+                fontSize: "20px",
+                margin: "40px 0",
+              }}
+            >
               Are you sure you want to use this item?
             </p>
             <button
@@ -408,10 +419,20 @@ function Home() {
               style={{ display: "block", margin: "0 auto" }}
               onClick={async () => {
                 try {
+                  // 调用 consumeItem 消耗物品
                   const result = await consumeItem(selectedItem.id);
                   console.log("Consume result:", result);
                   // 刷新背包数据
                   await handleBoneClick();
+                  // 调用 increaseHunger 增加宠物 Hunger，使用消耗物品的 bonus 值作为增加量
+                  if (alivePet) {
+                    const newHunger = await increaseHunger(
+                      alivePet.id,
+                      selectedItem.bonus
+                    );
+                    console.log("New Hunger:", newHunger);
+                    setAlivePet({ ...alivePet, hunger: newHunger });
+                  }
                 } catch (error) {
                   console.error("Failed to consume item:", error);
                 }
@@ -514,4 +535,3 @@ function App() {
 }
 
 export default App;
-

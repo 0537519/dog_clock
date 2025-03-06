@@ -163,7 +163,6 @@ namespace API.Controllers
         [HttpGet("{id}/calculate-unhealthy")]
         public async Task<ActionResult<bool>> CalculateUnhealthy(int id)
         {
-            
             await CalculateHunger(id);
             await CalculateMood(id);
 
@@ -190,5 +189,32 @@ namespace API.Controllers
             }
         }
 
+        [HttpPut("{id}/increase-hunger")]
+        public async Task<ActionResult<int>> IncreaseHunger(int id, [FromBody] int amount)
+        {
+            var pet = await _context.Pets.FindAsync(id);
+            if (pet == null)
+            {
+                return NotFound();
+            }
+            pet.Hunger = Math.Min(100, pet.Hunger + amount);
+            pet.Last_feed = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+            return Ok(pet.Hunger);
+        }
+
+        [HttpPut("{id}/increase-mood")]
+        public async Task<ActionResult<int>> IncreaseMood(int id, [FromBody] int amount)
+        {
+            var pet = await _context.Pets.FindAsync(id);
+            if (pet == null)
+            {
+                return NotFound();
+            }
+            pet.Mood = Math.Min(100, pet.Mood + amount);
+            pet.Last_play = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+            return Ok(pet.Mood);
+        }
     }
 }
