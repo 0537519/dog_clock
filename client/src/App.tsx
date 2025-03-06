@@ -13,13 +13,23 @@ import {
   calculateHunger,
   calculateMood,
   calculateHealthy,
-  calculateUnhealthy
+  calculateUnhealthy,
 } from "./hook/usePetsController";
 import { MdPets } from "react-icons/md";
 import { LuBone } from "react-icons/lu";
 import { FaRegSmile } from "react-icons/fa";
 import { GiHealthCapsule } from "react-icons/gi";
 import authorImage from "./assets/author.jpg";
+
+interface UserItem {
+  id: number;
+  name: string;
+  type: string;
+  bonus: number;
+  price: number;
+  prictureUrl: string;
+  quantity: number;
+}
 
 function Home() {
   const [showAdoptModal, setShowAdoptModal] = useState<boolean>(false);
@@ -32,8 +42,14 @@ function Home() {
   const [dogAge, setDogAge] = useState<string>("0.0");
   const [infoHunger, setInfoHunger] = useState<number | string>("0");
   const [infoMood, setInfoMood] = useState<number | string>("0");
-  // 新增：控制骨头图标弹窗的状态
   const [showBoneModal, setShowBoneModal] = useState<boolean>(false);
+  const [backpackItems, setBackpackItems] = useState<UserItem[]>([]);
+  const [currentIndex, setCurrentIndex] = useState<number>(0);
+
+  const getBonusIcon = (type: string) => {
+    return type.toLowerCase() === "hunger" ? <LuBone /> : "";
+  };
+
 
   const animateImage = () => {
     return new Promise((resolve) => {
@@ -93,16 +109,29 @@ function Home() {
     }
     try {
       const healthyStatus = await calculateHealthy(alivePet.id);
-      setAlivePet(prev => prev ? { ...prev, isHealthy: healthyStatus } : prev);
+      setAlivePet((prev) =>
+        prev ? { ...prev, isHealthy: healthyStatus } : prev
+      );
     } catch (error) {
       console.error("Error calculating healthy status: ", error);
     }
     setShowDogInfoModal(true);
   };
 
-  // 新增：点击骨头图标时的事件处理，弹出空白弹窗
-  const handleBoneClick = () => {
+  const handleBoneClick = async () => {
     setShowBoneModal(true);
+    try {
+      const response = await fetch("https://localhost:7028/api/UserItems");
+      if (!response.ok) throw new Error("Failed to fetch backpack items");
+      const items: UserItem[] = await response.json();
+      const hungerItems = items.filter(
+        (item) => item.type.toLowerCase() === "hunger"
+      );
+      setBackpackItems(hungerItems);
+    } catch (error) {
+      console.error("Error fetching backpack items:", error);
+      setBackpackItems([]);
+    }
   };
 
   useEffect(() => {
@@ -136,7 +165,7 @@ function Home() {
     }
     checkAlivePet();
   }, []);
-  
+
   const handleCreatePet = async () => {
     try {
       const trimmedName = dogName.slice(0, 20);
@@ -287,36 +316,112 @@ function Home() {
           </div>
         </div>
       )}
-      {/* 新增：点击骨头图标后弹出的空白弹窗 */}
+
       {showBoneModal && (
-        <div className="modal-overlay">
+        <div className="modal-overlay" onClick={() => setShowBoneModal(false)}>
           <div
             className="modal-content"
-            style={{
-              position: "relative",
-              display: "flex",
-              flexDirection: "row",
-              padding: "20px",
-            }}
+            onClick={(e) => e.stopPropagation()}
+            style={{ position: "relative" }}
           >
             <button
+              className="modal-close"
               onClick={() => setShowBoneModal(false)}
-              style={{
-                position: "absolute",
-                top: 10,
-                right: 10,
-                border: "none",
-                background: "none",
-                fontSize: "20px",
-                cursor: "pointer",
-              }}
             >
               ×
             </button>
-            {/* 空白内容 */}
+            <div
+              className="slider-container"
+              style={{
+                overflow: "hidden",
+                width: "100%",
+                position: "relative",
+              }}
+            >
+              <div
+                className="carousel-track"
+                style={{
+                  display: "flex",
+                  transition: "transform 0.3s ease",
+                  transform: `translateX(-${(currentIndex * 100) / 2}%)`,
+                }}
+              >
+                {backpackItems.map((item) => (
+                  <div
+                    key={item.id}
+                    className="product-card"
+                    style={{
+                      width: "50%",
+                      boxSizing: "border-box",
+                      padding: "10px",
+                      display: "flex",
+                      flexDirection: "row",
+                    }}
+                  >
+                    <div className="modal-left" style={{ width: "40%" }}>
+                      <img
+                        src={item.prictureUrl}
+                        alt={item.name}
+                        className="modal-image"
+                        style={{
+                          width: "100%",
+                          height: "auto",
+                          border: "2px solid brown",
+                        }}
+                      />
+                    </div>
+                    <div
+                      className="modal-right"
+                      style={{ width: "60%", paddingLeft: "10px" }}
+                    >
+                      <h2 className="modal-product-name">{item.name}</h2>
+                      <div className="modal-bonus">
+                        Bonus: +{item.bonus} {getBonusIcon(item.type)}
+                      </div>
+                      <div className="modal-quantity">Qty: {item.quantity}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={() => setCurrentIndex(Math.max(0, currentIndex - 1))}
+                style={{
+                  position: "absolute",
+                  top: "50%",
+                  left: "10px",
+                  transform: "translateY(-50%)",
+                  background: "none",
+                  border: "none",
+                  fontSize: "2rem",
+                  cursor: "pointer",
+                }}
+              >
+                {"<"}
+              </button>
+              <button
+                onClick={() =>
+                  setCurrentIndex(
+                    Math.min(backpackItems.length - 2, currentIndex + 1)
+                  )
+                }
+                style={{
+                  position: "absolute",
+                  top: "50%",
+                  right: "10px",
+                  transform: "translateY(-50%)",
+                  background: "none",
+                  border: "none",
+                  fontSize: "2rem",
+                  cursor: "pointer",
+                }}
+              >
+                {">"}
+              </button>
+            </div>
           </div>
         </div>
       )}
+
       {showAnimation && (
         <div
           className="animation-overlay"

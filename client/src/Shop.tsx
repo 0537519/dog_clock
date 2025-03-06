@@ -35,10 +35,8 @@ function ProductModal({ product, onClose }: ModalProps) {
   const [showConfirm, setShowConfirm] = useState(false);
   const [showInsufficient, setShowInsufficient] = useState(false);
 
-  // 点击 Confirm 时调用：先扣除余额，再购买商品
   const handleConfirmPurchase = async () => {
     try {
-      // 1. 调用 subtractBalance API：这里假设扣除的金额为产品价格，且用户ID为 1
       const balanceResponse = await fetch(
         "https://localhost:7028/api/user/balance/decrease/1",
         {
@@ -49,12 +47,10 @@ function ProductModal({ product, onClose }: ModalProps) {
       );
 
       if (!balanceResponse.ok) {
-        // 如果扣除余额失败，则显示余额不足弹窗
         setShowInsufficient(true);
         return;
       }
 
-      // 2. 如果扣除余额成功，则调用购买 API
       const purchaseResponse = await fetch(
         "https://localhost:7028/api/useritems/purchase",
         {
@@ -65,31 +61,25 @@ function ProductModal({ product, onClose }: ModalProps) {
       );
 
       if (!purchaseResponse.ok) {
-        // 购买失败也可以在这里处理错误（例如提示购买失败），这里仅输出错误日志
         console.error("Purchase failed");
       }
 
-      // 购买成功后关闭整个商品弹窗
       onClose();
     } catch {
-      // 如果出现异常，同样显示余额不足弹窗
       setShowInsufficient(true);
     }
   };
 
-  // 点击 Insufficient 弹窗的 Confirm 按钮时，关闭该弹窗
   const handleConfirmInsufficient = () => {
     setShowInsufficient(false);
   };
 
-  // 点击购买按钮时显示确认购买弹窗
   const handlePurchaseClick = () => {
     setShowConfirm(true);
   };
 
   return (
     <>
-      {/* 商品详情弹窗 */}
       <div className="modal-overlay" onClick={onClose}>
         <div className="modal-content" onClick={(e) => e.stopPropagation()}>
           <button className="modal-close" onClick={onClose}>x</button>
@@ -142,7 +132,6 @@ function ProductModal({ product, onClose }: ModalProps) {
         </div>
       </div>
   
-      {/* 余额不足弹窗，采用与确认购买弹窗一致的样式 */}
       {showInsufficient && (
         <div className="modal-confirm-overlay">
           <div className="modal-confirm-content">
