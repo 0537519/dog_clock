@@ -146,6 +146,9 @@ namespace API.Controllers
         [HttpGet("{id}/calculate-healthy")]
         public async Task<ActionResult<bool>> CalculateHealthy(int id)
         {
+            await CalculateHunger(id);
+            await CalculateMood(id);
+
             var pet = await _context.Pets.FindAsync(id);
             if (pet == null)
             {
@@ -156,5 +159,36 @@ namespace API.Controllers
             await _context.SaveChangesAsync();
             return isHealthy;
         }
+
+        [HttpGet("{id}/calculate-unhealthy")]
+        public async Task<ActionResult<bool>> CalculateUnhealthy(int id)
+        {
+            
+            await CalculateHunger(id);
+            await CalculateMood(id);
+
+            var pet = await _context.Pets.FindAsync(id);
+            if (pet == null)
+            {
+                return NotFound();
+            }
+            bool isHealthy = pet.Hunger >= 30 && pet.Mood >= 30;
+            if (isHealthy)
+            {
+                return false;
+            }
+            int minValue = Math.Min(pet.Hunger, pet.Mood);
+            double diff = 30 - minValue;
+            double thresholdMinutes = diff / 0.0283;
+            if (thresholdMinutes > 24 * 60)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
     }
 }

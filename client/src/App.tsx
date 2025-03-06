@@ -12,7 +12,8 @@ import {
   killPet,
   calculateHunger,
   calculateMood,
-  calculateHealthy
+  calculateHealthy,
+  calculateUnhealthy
 } from "./hook/usePetsController";
 import { MdPets } from "react-icons/md";
 import { LuBone } from "react-icons/lu";
@@ -21,19 +22,18 @@ import { GiHealthCapsule } from "react-icons/gi";
 import authorImage from "./assets/author.jpg";
 
 function Home() {
-  // 状态：模态框、宠物名字、活着的宠物
   const [showAdoptModal, setShowAdoptModal] = useState<boolean>(false);
   const [showNameModal, setShowNameModal] = useState<boolean>(false);
   const [dogName, setDogName] = useState<string>("");
   const [alivePet, setAlivePet] = useState<Pet | null>(null);
-  // 新增动画相关状态
   const [showAnimation, setShowAnimation] = useState<boolean>(false);
   const [animationOpacity, setAnimationOpacity] = useState<number>(0);
-  // 新增状态：显示狗狗信息的浮窗 & 存储计算出来的年龄、hunger、mood
   const [showDogInfoModal, setShowDogInfoModal] = useState<boolean>(false);
   const [dogAge, setDogAge] = useState<string>("0.0");
   const [infoHunger, setInfoHunger] = useState<number | string>("0");
   const [infoMood, setInfoMood] = useState<number | string>("0");
+  // 新增：控制骨头图标弹窗的状态
+  const [showBoneModal, setShowBoneModal] = useState<boolean>(false);
 
   const animateImage = () => {
     return new Promise((resolve) => {
@@ -46,7 +46,6 @@ function Home() {
           opacity = 1;
           setAnimationOpacity(opacity);
           clearInterval(fadeInInterval);
-          // 定格 3 秒
           setTimeout(() => {
             let fadeOutOpacity = 1;
             const fadeOutInterval = setInterval(() => {
@@ -69,7 +68,6 @@ function Home() {
     });
   };
 
-  // 点击狗爪图标时，调用 calculateAge、calculateHunger、calculateMood 后显示狗狗信息弹窗
   const handleDogInfoClick = async () => {
     if (!alivePet) return;
     try {
@@ -95,7 +93,6 @@ function Home() {
     }
     try {
       const healthyStatus = await calculateHealthy(alivePet.id);
- 
       setAlivePet(prev => prev ? { ...prev, isHealthy: healthyStatus } : prev);
     } catch (error) {
       console.error("Error calculating healthy status: ", error);
@@ -103,8 +100,12 @@ function Home() {
     setShowDogInfoModal(true);
   };
 
+  // 新增：点击骨头图标时的事件处理，弹出空白弹窗
+  const handleBoneClick = () => {
+    setShowBoneModal(true);
+  };
+
   useEffect(() => {
-    // 检查是否存在活着的宠物
     async function checkAlivePet() {
       try {
         const alive = await hasAlivePet();
@@ -112,14 +113,19 @@ function Home() {
           const pet = await getAlivePet();
           const age = await calculateAge(pet.id);
           console.log("Calculated age:", age);
-          // 如果宠物年龄大于其 deadAge，则杀死宠物并播放动画，再刷新页面
           if (age > pet.deadAge) {
             await killPet(pet.id);
             await animateImage();
             window.location.reload();
           } else {
-            // 否则正常设置 alivePet，显示四个圆圈
-            setAlivePet(pet);
+            const unhealthy = await calculateUnhealthy(pet.id);
+            if (unhealthy) {
+              await killPet(pet.id);
+              await animateImage();
+              window.location.reload();
+            } else {
+              setAlivePet(pet);
+            }
           }
         } else {
           setShowAdoptModal(true);
@@ -130,11 +136,9 @@ function Home() {
     }
     checkAlivePet();
   }, []);
-
-  // 模态框中 OK 按钮的处理函数
+  
   const handleCreatePet = async () => {
     try {
-      // 限制宠物名字长度，例如 20 个字符
       const trimmedName = dogName.slice(0, 20);
       await createPet(trimmedName);
       setShowNameModal(false);
@@ -204,7 +208,6 @@ function Home() {
             >
               ×
             </button>
-
             <div
               className="modal-image-container"
               style={{
@@ -284,7 +287,36 @@ function Home() {
           </div>
         </div>
       )}
-      {/* 图片动画 */}
+      {/* 新增：点击骨头图标后弹出的空白弹窗 */}
+      {showBoneModal && (
+        <div className="modal-overlay">
+          <div
+            className="modal-content"
+            style={{
+              position: "relative",
+              display: "flex",
+              flexDirection: "row",
+              padding: "20px",
+            }}
+          >
+            <button
+              onClick={() => setShowBoneModal(false)}
+              style={{
+                position: "absolute",
+                top: 10,
+                right: 10,
+                border: "none",
+                background: "none",
+                fontSize: "20px",
+                cursor: "pointer",
+              }}
+            >
+              ×
+            </button>
+            {/* 空白内容 */}
+          </div>
+        </div>
+      )}
       {showAnimation && (
         <div
           className="animation-overlay"
@@ -316,7 +348,7 @@ function Home() {
               <MdPets />
             </span>
           </div>
-          <div className="circle">
+          <div className="circle" onClick={handleBoneClick}>
             <span className="material-symbols-outlined pet_supplies">
               <LuBone />
             </span>

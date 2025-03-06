@@ -123,3 +123,11 @@ export async function calculateHealthy(id: number): Promise<boolean> {
   }
   return response.json();
 }
+
+export async function calculateUnhealthy(id: number): Promise<boolean> {
+  const response = await fetch(`${API_BASE_URL}/${id}/calculate-unhealthy`);
+  if (!response.ok) {
+    throw new Error('Failed to calculate unhealthy');
+  }
+  return response.json();
+}
