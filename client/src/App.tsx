@@ -32,6 +32,7 @@ interface UserItem {
 }
 
 function Home() {
+  // 现有状态
   const [showAdoptModal, setShowAdoptModal] = useState<boolean>(false);
   const [showNameModal, setShowNameModal] = useState<boolean>(false);
   const [dogName, setDogName] = useState<string>("");
@@ -46,11 +47,20 @@ function Home() {
   const [backpackItems, setBackpackItems] = useState<UserItem[]>([]);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
 
+  // 新增：用于使用物品确认窗口
+  const [showUseModal, setShowUseModal] = useState<boolean>(false);
+  const [selectedItem, setSelectedItem] = useState<UserItem | null>(null);
+
   const getBonusIcon = (type: string) => {
     return type.toLowerCase() === "hunger" ? <LuBone /> : "";
   };
 
+  const handleUseItem = (item: UserItem) => {
+    setSelectedItem(item);
+    setShowUseModal(true);
+  };
 
+  // 现有 animateImage、handleDogInfoClick、handleBoneClick 等代码保持不变
   const animateImage = () => {
     return new Promise((resolve) => {
       setShowAnimation(true);
@@ -269,14 +279,14 @@ function Home() {
             >
               <p
                 className="modal-text"
-                style={{ fontSize: "24px", marginBottom: "3px" }}
+                style={{ fontSize: "30px", marginBottom: "2px" }}
               >
                 <strong>{alivePet.name}</strong>
               </p>
-              <p className="modal-text" style={{ marginBottom: "3px" }}>
+              <p className="modal-text" style={{ marginBottom: "2px" }}>
                 <strong>Age:</strong> {dogAge}
               </p>
-              <p className="modal-text" style={{ marginBottom: "3px" }}>
+              <p className="modal-text" style={{ marginBottom: "2px" }}>
                 <strong>Hunger:</strong>{" "}
                 <span
                   style={
@@ -316,13 +326,12 @@ function Home() {
           </div>
         </div>
       )}
-
+      {/* 新增：点击骨头图标弹出的空白弹窗，显示背包中所有 type 为 "hunger" 的物品信息 */}
       {showBoneModal && (
         <div className="modal-overlay" onClick={() => setShowBoneModal(false)}>
           <div
-            className="modal-content"
+            className="modal-content bone-modal-content"
             onClick={(e) => e.stopPropagation()}
-            style={{ position: "relative" }}
           >
             <button
               className="modal-close"
@@ -330,90 +339,49 @@ function Home() {
             >
               ×
             </button>
-            <div
-              className="slider-container"
-              style={{
-                overflow: "hidden",
-                width: "100%",
-                position: "relative",
-              }}
-            >
+            <div className="bone-slider-container">
               <div
-                className="carousel-track"
+                className="bone-carousel-track"
                 style={{
-                  display: "flex",
-                  transition: "transform 0.3s ease",
-                  transform: `translateX(-${(currentIndex * 100) / 2}%)`,
+                  width: `${backpackItems.length * 250}px`,
+                  transform: `translateX(-${currentIndex * 250}px)`,
                 }}
               >
                 {backpackItems.map((item) => (
-                  <div
-                    key={item.id}
-                    className="product-card"
-                    style={{
-                      width: "50%",
-                      boxSizing: "border-box",
-                      padding: "10px",
-                      display: "flex",
-                      flexDirection: "row",
-                    }}
-                  >
-                    <div className="modal-left" style={{ width: "40%" }}>
+                  <div key={item.id} className="bone-product-card">
+                    <div
+                      className="bone-modal-image-container"
+                      onClick={() => handleUseItem(item)}
+                    >
                       <img
                         src={item.prictureUrl}
                         alt={item.name}
-                        className="modal-image"
-                        style={{
-                          width: "100%",
-                          height: "auto",
-                          border: "2px solid brown",
-                        }}
+                        className="bone-modal-image"
                       />
-                    </div>
-                    <div
-                      className="modal-right"
-                      style={{ width: "60%", paddingLeft: "10px" }}
-                    >
-                      <h2 className="modal-product-name">{item.name}</h2>
-                      <div className="modal-bonus">
-                        Bonus: +{item.bonus} {getBonusIcon(item.type)}
+                      <div className="bone-modal-info">
+                        <h3 className="bone-modal-product-name">{item.name}</h3>
+                        <div className="bone-modal-bonus">
+                          Bonus: +{item.bonus} {getBonusIcon(item.type)}
+                        </div>
+                        <div className="bone-modal-quantity">
+                          Qty: {item.quantity}
+                        </div>
                       </div>
-                      <div className="modal-quantity">Qty: {item.quantity}</div>
                     </div>
                   </div>
                 ))}
               </div>
               <button
+                className="bone-slider-btn left"
                 onClick={() => setCurrentIndex(Math.max(0, currentIndex - 1))}
-                style={{
-                  position: "absolute",
-                  top: "50%",
-                  left: "10px",
-                  transform: "translateY(-50%)",
-                  background: "none",
-                  border: "none",
-                  fontSize: "2rem",
-                  cursor: "pointer",
-                }}
               >
                 {"<"}
               </button>
               <button
+                className="bone-slider-btn right"
                 onClick={() =>
-                  setCurrentIndex(
-                    Math.min(backpackItems.length - 2, currentIndex + 1)
-                  )
+                  setCurrentIndex(Math.min(backpackItems.length - 2, currentIndex + 1))
                 }
-                style={{
-                  position: "absolute",
-                  top: "50%",
-                  right: "10px",
-                  transform: "translateY(-50%)",
-                  background: "none",
-                  border: "none",
-                  fontSize: "2rem",
-                  cursor: "pointer",
-                }}
               >
                 {">"}
               </button>
@@ -421,7 +389,32 @@ function Home() {
           </div>
         </div>
       )}
-
+      {showUseModal && selectedItem && (
+        <div className="modal-overlay" onClick={() => setShowUseModal(false)}>
+          <div
+            className="modal-content"
+            onClick={(e) => e.stopPropagation()}
+            style={{ width: "400px", height: "200px" }}
+          >
+            <button className="modal-close" onClick={() => setShowUseModal(false)}>
+              ×
+            </button>
+            <p style={{ textAlign: "center", fontSize: "20px", margin: "40px 0" }}>
+              Are you sure you want to use this item?
+            </p>
+            <button
+              className="modal-button"
+              style={{ display: "block", margin: "0 auto" }}
+              onClick={() => {
+                console.log("Use item confirmed:", selectedItem);
+                setShowUseModal(false);
+              }}
+            >
+              Confirm
+            </button>
+          </div>
+        </div>
+      )}
       {showAnimation && (
         <div
           className="animation-overlay"

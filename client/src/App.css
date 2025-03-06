@@ -89,10 +89,11 @@ body {
 }
 
 .modal-text {
-  font-size: 20px;
-  margin-bottom: 20px;
+  font-size: 25px;
+  margin-top: 20px; 
+  line-height: 0.8; 
+  margin-left: 3px;
 }
-
 .modal-input {
   padding: 8px;
   font-size: 16px;
@@ -106,8 +107,6 @@ body {
   cursor: pointer;
   margin-top: 20px;
 }
-
-/* New styles for icon circles */
 
 .icon-container {
   display: flex;
@@ -142,4 +141,99 @@ body {
 
 .circle:active {
   transform: scale(0.95);
+}
+
+/* 骨头弹窗专用样式 */
+.bone-modal-content {
+  position: relative;
+  padding: 20px;
+  height: 400px; /* 根据需要调整 */
+  width: 500px;  /* 根据需要调整 */
+}
+
+.bone-slider-container {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.bone-carousel-track {
+  display: flex;
+  transition: transform 0.3s ease;
+}
+
+.bone-product-card {
+  flex: 0 0 250px;
+  box-sizing: border-box;
+  padding: 10px;
+  position: relative;
+}
+
+.bone-modal-image-container {
+  width: 100%;
+  position: relative;
+}
+
+.bone-modal-image {
+  width: 100%;
+  height: auto;
+  border: 2px solid brown;
+  display: block;
+}
+
+.bone-modal-info {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+.bone-modal-image-container:hover .bone-modal-info {
+  opacity: 1;
+}
+
+.bone-modal-product-name {
+  font-size: 22px;
+  margin: 5px 0;
+}
+
+.bone-modal-bonus {
+  font-size: 20px;
+  margin: 8px 0;
+}
+
+.bone-modal-quantity {
+  font-size: 20px;
+}
+
+.bone-slider-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid #ccc;
+  font-size: 2rem;
+  color: black;
+  cursor: pointer;
+  z-index: 1010;
+}
+
+.bone-slider-btn.left {
+  left: 10px;
+}
+
+.bone-slider-btn.right {
+  right: 10px;
 }
