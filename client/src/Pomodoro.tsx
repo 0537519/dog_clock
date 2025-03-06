@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import "./Pomodoro.css";
-import { usePomodoroController } from "./hook/usePomodoroController"; // 引入 API Hook
+import { usePomodoroController } from "./hook/usePomodoroController";
+
+const API_BASE_URL = "https://localhost:7028/api/Pomodoro";
 
 interface TagOption {
   label: string;
@@ -23,6 +25,7 @@ const Pomodoro: React.FC = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [selectedTag, setSelectedTag] = useState("Study");
   const [pomodoroId, setPomodoroId] = useState<number | null>(null);
+  const [isUnmounted, setIsUnmounted] = useState(false);
 
   useEffect(() => {
     const savedState = sessionStorage.getItem('pomodoroState');
@@ -51,7 +54,6 @@ const Pomodoro: React.FC = () => {
     }
   }, []);
 
-  // 新增持久化状态effect
   useEffect(() => {
     if (isRunning || pomodoroId !== null) {
       const stateToSave = {
@@ -67,7 +69,7 @@ const Pomodoro: React.FC = () => {
     }
   }, [accumulated, isRunning, selectedTag, pomodoroId]);
 
-  const { createPomodoroSession, updatePomodoroSession } = usePomodoroController(); 
+  const { createPomodoroSession, updatePomodoroSession } = usePomodoroController();
 
   const currentColor =
     tagOptions.find((option) => option.label === selectedTag)?.color ||
@@ -78,12 +80,10 @@ const Pomodoro: React.FC = () => {
   const outerR = 150;
   const innerR = 140;
 
-  // 红色小圆显示角度：当 accumulated = 0 时，redAngle = (0+270)%360 = 270，即顶部
   const redAngle = (accumulated + 270) % 360;
   const redX = centerX + outerR * Math.cos((redAngle * Math.PI) / 180);
   const redY = centerY + outerR * Math.sin((redAngle * Math.PI) / 180);
 
-  // 映射累计角度到秒数（360度对应7200秒），然后转换为 mm:ss 格式
   const totalSeconds = Math.round((accumulated / 360) * 7200);
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
@@ -139,7 +139,6 @@ const Pomodoro: React.FC = () => {
     setDragging(false);
   };
 
-  // 倒计时：每秒减少 0.05 度（因为1度=20秒）
   useEffect(() => {
     if (isRunning) {
       const timer = setInterval(() => {
@@ -158,28 +157,58 @@ const Pomodoro: React.FC = () => {
           return prev - 0.05;
         });
       }, 1000);
-      return () => clearInterval(timer);
+      
+      const handleVisibilityChange = () => {
+        if (document.visibilityState === 'hidden' && !isUnmounted && pomodoroId !== null) {
+          navigator.sendBeacon(
+            `${API_BASE_URL}/${pomodoroId}/update-on-unload`,
+            JSON.stringify({ isCompleted: accumulated <= 0.05 })
+          );
+        }
+      };
+
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+      
+      return () => {
+        clearInterval(timer);
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+      };
     }
   }, [isRunning]);
 
+  useEffect(() => {
+    return () => {
+      setIsUnmounted(true);
+      if (pomodoroId !== null && accumulated > 0.05) {
+        fetch(`${API_BASE_URL}/${pomodoroId}/update-on-unload`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ isCompleted: false }),
+          keepalive: true
+        });
+      }
+    };
+  }, [pomodoroId, accumulated]);
+
   const handleStartEnd = async () => {
     if (isRunning) {
-      //
       sessionStorage.removeItem('pomodoroState'); 
       if (pomodoroId !== null) {
         await updatePomodoroSession(pomodoroId, false);
       }
-  
-      // 重置状态
       setAccumulated(0);
       setIsRunning(false);
-      setPomodoroId(null); // 
+      setPomodoroId(null);
     } else {
-     
       if (minutes > 0) {
         const session = await createPomodoroSession(selectedTag, minutes);
         if (session && session.id) {
-          setPomodoroId(session.id); //
+          await fetch(`${API_BASE_URL}/${session.id}/update-on-unload`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ isCompleted: false })
+          });
+          setPomodoroId(session.id);
         }
         setIsRunning(true);
       } else {
@@ -190,16 +219,15 @@ const Pomodoro: React.FC = () => {
 
   let thickPath = "";
   if (accumulated === 360) {
-    thickPath = `
-      M150,0
-      A150,150 0 1,1 150,300
-      A150,150 0 1,1 150,0
-      Z
-      M150,10
-      A140,140 0 1,0 150,290
-      A140,140 0 1,0 150,10
-      Z
-    `;
+    thickPath = 
+      `M150,0
+       A150,150 0 1,1 150,300
+       A150,150 0 1,1 150,0
+       Z
+       M150,10
+       A140,140 0 1,0 150,290
+       A140,140 0 1,0 150,10
+       Z`;
   } else if (accumulated > 0) {
     const outerEndX =
       centerX + outerR * Math.cos(((accumulated - 90) * Math.PI) / 180);
@@ -209,22 +237,17 @@ const Pomodoro: React.FC = () => {
       centerX + innerR * Math.cos(((accumulated - 90) * Math.PI) / 180);
     const innerEndY =
       centerY + innerR * Math.sin(((accumulated - 90) * Math.PI) / 180);
-    const outerStartX =
-      centerX + outerR * Math.cos((-90 * Math.PI) / 180);
-    const outerStartY =
-      centerY + outerR * Math.sin((-90 * Math.PI) / 180);
-    const innerStartX =
-      centerX + innerR * Math.cos((-90 * Math.PI) / 180);
-    const innerStartY =
-      centerY + innerR * Math.sin((-90 * Math.PI) / 180);
+    const outerStartX = centerX + outerR * Math.cos((-90 * Math.PI) / 180);
+    const outerStartY = centerY + outerR * Math.sin((-90 * Math.PI) / 180);
+    const innerStartX = centerX + innerR * Math.cos((-90 * Math.PI) / 180);
+    const innerStartY = centerY + innerR * Math.sin((-90 * Math.PI) / 180);
     const largeArcFlag = accumulated > 180 ? 1 : 0;
-    thickPath = `
-      M ${outerStartX},${outerStartY}
-      A ${outerR},${outerR} 0 ${largeArcFlag} 1 ${outerEndX},${outerEndY}
-      L ${innerEndX},${innerEndY}
-      A ${innerR},${innerR} 0 ${largeArcFlag} 0 ${innerStartX},${innerStartY}
-      Z
-    `;
+    thickPath = 
+      `M ${outerStartX},${outerStartY}
+       A ${outerR},${outerR} 0 ${largeArcFlag} 1 ${outerEndX},${outerEndY}
+       L ${innerEndX},${innerEndY}
+       A ${innerR},${innerR} 0 ${largeArcFlag} 0 ${innerStartX},${innerStartY}
+       Z`;
   }
 
   return (
@@ -294,4 +317,3 @@ const Pomodoro: React.FC = () => {
 };
 
 export default Pomodoro;
-

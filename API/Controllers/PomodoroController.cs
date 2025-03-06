@@ -16,14 +16,12 @@ namespace API.Controllers
             _context = context;
         }
 
-        // GET: api/Pomodoro
         [HttpGet]
         public async Task<ActionResult<List<PomodoroSession>>> GetPomodoroSessions()
         {
             return await _context.pomodoroSessions.ToListAsync();
         }
 
-        // GET: api/Pomodoro/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<PomodoroSession>> GetPomodoroSession(int id)
         {
@@ -33,7 +31,6 @@ namespace API.Controllers
             return session;
         }
 
-        // POST: api/Pomodoro
         [HttpPost]
         public async Task<ActionResult<PomodoroSession>> CreatePomodoroSession([FromBody] PomodoroSessionCreateRequest request)
         {
@@ -53,7 +50,6 @@ namespace API.Controllers
             return CreatedAtAction(nameof(GetPomodoroSession), new { id = session.Id }, session);
         }
 
-        // PUT: api/Pomodoro/{id}
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdatePomodoroSession(int id, [FromBody] UpdatePomodoroSessionRequest request)
         {
@@ -69,6 +65,50 @@ namespace API.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
+        }
+
+        [HttpPut("{id}/update-on-unload")]
+        public async Task<IActionResult> UpdateOnUnload(int id, [FromBody] UpdatePomodoroSessionRequest request)
+        {
+            var session = await _context.pomodoroSessions.FindAsync(id);
+            if (session == null) return NotFound();
+
+            session.EndTime = DateTime.Now;
+            session.IsCompleted = request.IsCompleted;
+            session.RewardPoints = (int)(session.EndTime - session.StartTime).TotalMinutes * 2;
+
+            _context.pomodoroSessions.Update(session);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        [HttpGet("total-count")]
+        public async Task<ActionResult<int>> GetTotalSessionCount()
+        {
+            int count = await _context.pomodoroSessions.CountAsync();
+            return Ok(count);
+        }
+
+        [HttpGet("total-focus")]
+        public async Task<ActionResult<double>> GetTotalFocusMinutes()
+        {
+            var sessions = await _context.pomodoroSessions
+                                         .Where(s => s.EndTime > s.StartTime)
+                                         .ToListAsync();
+            double totalMinutes = sessions.Sum(s => (s.EndTime - s.StartTime).TotalMinutes);
+            return Ok(totalMinutes);
+        }
+
+        [HttpGet("completion-rate")]
+        public async Task<ActionResult<string>> GetCompletionRate()
+        {
+            int totalCount = await _context.pomodoroSessions.CountAsync();
+            if (totalCount == 0)
+                return Ok("0%");
+            int completedCount = await _context.pomodoroSessions.CountAsync(s => s.IsCompleted == true);
+            double rate = (double)completedCount / totalCount * 100;
+            return Ok($"{rate:F2}%");
         }
     }
 
