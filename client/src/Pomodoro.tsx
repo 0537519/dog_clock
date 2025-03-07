@@ -25,10 +25,10 @@ const Pomodoro: React.FC = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [selectedTag, setSelectedTag] = useState("Study");
   const [pomodoroId, setPomodoroId] = useState<number | null>(null);
-  const [isUnmounted, setIsUnmounted] = useState(false);
+  const [startTimestamp, setStartTimestamp] = useState<number | null>(null);
 
   useEffect(() => {
-    const savedState = sessionStorage.getItem('pomodoroState');
+    const savedState = sessionStorage.getItem("pomodoroState");
     if (savedState) {
       const { 
         savedAccumulated, 
@@ -42,14 +42,24 @@ const Pomodoro: React.FC = () => {
         const elapsed = (Date.now() - savedStartTime) / 1000;
         const newAccumulated = Math.max(savedAccumulated - elapsed * 0.05, 0);
         
+        if (savedPomodoroId) {
+          const actualDuration = Math.floor(elapsed);
+          fetch(`${API_BASE_URL}/${savedPomodoroId}/update-on-unload`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              isCompleted: newAccumulated <= 0,
+              ActualDuration: actualDuration
+            }),
+            keepalive: true
+          }).catch(err => console.error("状态恢复更新失败:", err));
+        }
+
         setAccumulated(newAccumulated);
         setIsRunning(newAccumulated > 0);
         setSelectedTag(savedSelectedTag);
         setPomodoroId(savedPomodoroId);
-        
-        if (newAccumulated <= 0 && savedPomodoroId !== null) {
-          updatePomodoroSession(savedPomodoroId, true);
-        }
+        setStartTimestamp(savedStartTime);
       }
     }
   }, []);
@@ -59,15 +69,15 @@ const Pomodoro: React.FC = () => {
       const stateToSave = {
         savedAccumulated: accumulated,
         savedIsRunning: isRunning,
-        savedStartTime: Date.now(),
+        savedStartTime: startTimestamp || Date.now(),
         savedSelectedTag: selectedTag,
         savedPomodoroId: pomodoroId
       };
-      sessionStorage.setItem('pomodoroState', JSON.stringify(stateToSave));
+      sessionStorage.setItem("pomodoroState", JSON.stringify(stateToSave));
     } else {
-      sessionStorage.removeItem('pomodoroState');
+      sessionStorage.removeItem("pomodoroState");
     }
-  }, [accumulated, isRunning, selectedTag, pomodoroId]);
+  }, [accumulated, isRunning, selectedTag, pomodoroId, startTimestamp]);
 
   const { createPomodoroSession, updatePomodoroSession } = usePomodoroController();
 
@@ -141,78 +151,112 @@ const Pomodoro: React.FC = () => {
 
   useEffect(() => {
     if (isRunning) {
-      const timer = setInterval(() => {
-        setAccumulated((prev) => {
-          if (prev <= 0.05) {
-            sessionStorage.removeItem('pomodoroState');
-            clearInterval(timer);
-            setIsRunning(false);
-
-            if (pomodoroId !== null) {
-              updatePomodoroSession(pomodoroId, true);
-            }
-
-            return 0;
-          }
-          return prev - 0.05;
-        });
-      }, 1000);
+      const startTime = Date.now();
+      setStartTimestamp(startTime);
       
-      const handleVisibilityChange = () => {
-        if (document.visibilityState === 'hidden' && !isUnmounted && pomodoroId !== null) {
+      const timer = setInterval(() => {
+        const currentTime = Date.now();
+        const elapsedSeconds = (currentTime - startTime) / 1000;
+        const newAccumulated = Math.max(accumulated - elapsedSeconds * 0.05, 0);
+        
+        setAccumulated(newAccumulated);
+        
+        if (newAccumulated <= 0) {
+          clearInterval(timer);
+          setIsRunning(false);
+          if (pomodoroId) {
+            updatePomodoroSession(pomodoroId, true);
+          }
+          sessionStorage.removeItem("pomodoroState");
+        }
+      }, 1000);
+
+      const handleUnload = async () => {
+        if (pomodoroId && startTimestamp) {
+          const actualDuration = Math.floor((Date.now() - startTimestamp) / 1000);
+          const isCompleted = accumulated <= 0;
+          const blob = new Blob([JSON.stringify({
+            isCompleted,
+            ActualDuration: actualDuration
+          })], { type: "application/json" });
           navigator.sendBeacon(
             `${API_BASE_URL}/${pomodoroId}/update-on-unload`,
-            JSON.stringify({ isCompleted: accumulated <= 0.05 })
+            blob
           );
         }
       };
 
-      document.addEventListener('visibilitychange', handleVisibilityChange);
-      
+      window.addEventListener("beforeunload", handleUnload);
       return () => {
         clearInterval(timer);
-        document.removeEventListener('visibilitychange', handleVisibilityChange);
+        window.removeEventListener("beforeunload", handleUnload);
       };
     }
-  }, [isRunning]);
+  }, [isRunning, pomodoroId, accumulated, startTimestamp]);
 
   useEffect(() => {
     return () => {
-      setIsUnmounted(true);
-      if (pomodoroId !== null && accumulated > 0.05) {
+      if (pomodoroId && startTimestamp) {
+        const actualDuration = Math.floor((Date.now() - startTimestamp) / 1000);
+        const isCompleted = accumulated <= 0;
         fetch(`${API_BASE_URL}/${pomodoroId}/update-on-unload`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ isCompleted: false }),
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ isCompleted, ActualDuration: actualDuration }),
           keepalive: true
-        });
+        }).catch(err => console.error("组件卸载更新失败:", err));
       }
     };
-  }, [pomodoroId, accumulated]);
+  }, [pomodoroId, startTimestamp, accumulated]);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden && pomodoroId && startTimestamp) {
+        const actualDuration = Math.floor((Date.now() - startTimestamp) / 1000);
+        const isCompleted = accumulated <= 0;
+        fetch(`${API_BASE_URL}/${pomodoroId}/update-on-unload`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ isCompleted, ActualDuration: actualDuration }),
+          keepalive: true
+        }).catch(err => console.error("Visibility update failed:", err));
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [pomodoroId, startTimestamp, accumulated]);
 
   const handleStartEnd = async () => {
     if (isRunning) {
-      sessionStorage.removeItem('pomodoroState'); 
+      sessionStorage.removeItem("pomodoroState"); 
       if (pomodoroId !== null) {
         await updatePomodoroSession(pomodoroId, false);
       }
       setAccumulated(0);
       setIsRunning(false);
       setPomodoroId(null);
+      setStartTimestamp(null);
     } else {
       if (minutes > 0) {
         const session = await createPomodoroSession(selectedTag, minutes);
-        if (session && session.id) {
-          await fetch(`${API_BASE_URL}/${session.id}/update-on-unload`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ isCompleted: false })
-          });
+        if (session?.id) {
           setPomodoroId(session.id);
+          const now = Date.now();
+          setStartTimestamp(now);
+          setIsRunning(true);
+          
+          sessionStorage.setItem("pomodoroState", JSON.stringify({
+            savedAccumulated: accumulated,
+            savedIsRunning: true,
+            savedStartTime: now,
+            savedSelectedTag: selectedTag,
+            savedPomodoroId: session.id
+          }));
         }
-        setIsRunning(true);
       } else {
-        alert("At least 1 min.");
+        alert("至少需要1分钟");
       }
     }
   };
@@ -308,7 +352,7 @@ const Pomodoro: React.FC = () => {
             </select>
           </div>
           <button className="start-button" onClick={handleStartEnd}>
-            {isRunning ? "End" : "Start"}
+            {isRunning ? "停止" : "开始"}
           </button>
         </div>
       </div>
