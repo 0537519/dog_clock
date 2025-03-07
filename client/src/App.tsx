@@ -2,6 +2,8 @@ import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import "./App.css";
 import Shop from "./Shop";
 import Pomodoro from "./Pomodoro";
+import Data from "./Data";
+import Task from "./Task";
 import { useState, useEffect } from "react";
 import {
   Pet,
@@ -662,7 +664,7 @@ function App() {
           <Link className="poppins-regular nav-item" to="/pomodoro">
             Pomodoro
           </Link>
-          <Link className="poppins-regular nav-item" to="/">
+          <Link className="poppins-regular nav-item" to="/task">
             Task Manager
           </Link>
           <Link className="poppins-regular nav-item" to="/shop">
@@ -671,7 +673,7 @@ function App() {
           <Link className="poppins-regular nav-item" to="/">
             Settings
           </Link>
-          <Link className="poppins-regular nav-item" to="/">
+          <Link className="poppins-regular nav-item" to="/data">
             Data
           </Link>
         </div>
@@ -679,6 +681,8 @@ function App() {
         <Routes>
           <Route path="/shop" element={<Shop />} />
           <Route path="/pomodoro" element={<Pomodoro />} />
+          <Route path="/data" element={<Data />} />
+          <Route path="/task" element={<Task />} />
           <Route path="/" element={<Home />} />
         </Routes>
 
