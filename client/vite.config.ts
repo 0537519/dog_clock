@@ -1,15 +1,16 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import mkcert from 'vite-plugin-mkcert'
+import mkcert from 'vite-plugin-mkcert';
+import vue from '@vitejs/plugin-vue'
 
 
-// https://vite.dev/config/
 export default defineConfig({
+  base:'./',
   server:{
     port:3000
   },
-  plugins: [react(),mkcert()],
+  plugins: [react(),mkcert(),vue()],
   resolve: {
     alias: {
       react: path.resolve(__dirname, 'node_modules/react'),
