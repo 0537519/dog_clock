@@ -19,6 +19,7 @@ export interface PomodoroSessionCreateRequest {
 
 export interface UpdatePomodoroSessionRequest {
   isCompleted: boolean;
+  ActualDuration?: number;
 }
 
 export const usePomodoroController = () => {
@@ -99,7 +100,6 @@ export const usePomodoroController = () => {
     }
   };
 
-  // 新增 hook：获取总的 session 数量
   const getTotalSessionCount = async (): Promise<number | null> => {
     try {
       setLoading(true);
@@ -115,7 +115,6 @@ export const usePomodoroController = () => {
     }
   };
 
-  // 新增 hook：获取所有 session 实际专注时间之和（分钟数）
   const getTotalFocusMinutes = async (): Promise<number | null> => {
     try {
       setLoading(true);
@@ -131,7 +130,6 @@ export const usePomodoroController = () => {
     }
   };
 
-  // 新增 hook：获取完成率（百分比格式）
   const getCompletionRate = async (): Promise<string | null> => {
     try {
       setLoading(true);

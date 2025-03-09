@@ -28,7 +28,34 @@ import { FaRegSmile } from "react-icons/fa";
 import { GiHealthCapsule } from "react-icons/gi";
 import authorImage from "./assets/author.jpg";
 
-// 定义 UserItem 接口（注意属性名与后端返回的 JSON 保持一致）
+interface ProtectedLinkProps {
+  to: string;
+  className?: string;
+  children: React.ReactNode;
+}
+
+const ProtectedLink: React.FC<ProtectedLinkProps> = ({
+  to,
+  className,
+  children,
+}) => {
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+    const state = sessionStorage.getItem("pomodoroState");
+    if (state) {
+      const { savedIsRunning } = JSON.parse(state);
+      if (savedIsRunning) {
+        e.preventDefault();
+        alert("Cannot leave Pomodoro page while timer is running.");
+      }
+    }
+  };
+  return (
+    <Link to={to} className={className} onClick={handleClick}>
+      {children}
+    </Link>
+  );
+};
+
 interface UserItem {
   id: number;
   name: string;
@@ -191,15 +218,18 @@ function Home() {
           const age = await calculateAge(pet.id);
           console.log("Calculated age:", age);
           if (age > pet.deadAge) {
+            // 当狗狗死亡时：调用 killPet，播放死亡动画，然后直接显示 adopt 弹窗
             await killPet(pet.id);
             await animateImage();
-            window.location.reload();
+            setAlivePet(null);
+            setShowAdoptModal(true);
           } else {
             const unhealthy = await calculateUnhealthy(pet.id);
             if (unhealthy) {
               await killPet(pet.id);
               await animateImage();
-              window.location.reload();
+              setAlivePet(null);
+              setShowAdoptModal(true);
             } else {
               setAlivePet(pet);
             }
@@ -579,7 +609,6 @@ function Home() {
                 try {
                   const result = await consumeItem(selectedSmileItem.id);
                   console.log("Consume result:", result);
-                  // 刷新 mood 背包数据
                   await handleSmileClick();
                   if (alivePet) {
                     const newMood = await increaseMood(
@@ -625,30 +654,29 @@ function Home() {
           />
         </div>
       )}
-      {alivePet && (
-        <div className="icon-container">
-          <div className="circle" onClick={handleDogInfoClick}>
-            <span className="material-symbols-outlined pets">
-              <MdPets />
-            </span>
-          </div>
-          <div className="circle" onClick={handleBoneClick}>
-            <span className="material-symbols-outlined pet_supplies">
-              <LuBone />
-            </span>
-          </div>
-          <div className="circle" onClick={handleSmileClick}>
-            <span className="material-symbols-outlined ent_very_satisfied">
-              <FaRegSmile />
-            </span>
-          </div>
-          <div className="circle">
-            <span className="material-symbols-outlined home_health">
-              <GiHealthCapsule />
-            </span>
-          </div>
+      {/* 图标区域始终显示，不再依赖 alivePet */}
+      <div className="icon-container">
+        <div className="circle" onClick={handleDogInfoClick}>
+          <span className="material-symbols-outlined pets">
+            <MdPets />
+          </span>
         </div>
-      )}
+        <div className="circle" onClick={handleBoneClick}>
+          <span className="material-symbols-outlined pet_supplies">
+            <LuBone />
+          </span>
+        </div>
+        <div className="circle" onClick={handleSmileClick}>
+          <span className="material-symbols-outlined ent_very_satisfied">
+            <FaRegSmile />
+          </span>
+        </div>
+        <div className="circle">
+          <span className="material-symbols-outlined home_health">
+            <GiHealthCapsule />
+          </span>
+        </div>
+      </div>
     </div>
   );
 }
@@ -658,24 +686,24 @@ function App() {
     <Router>
       <div className="app-container">
         <div className="top-bar">
-          <Link className="poppins-regular nav-item" to="/">
+          <ProtectedLink className="poppins-regular nav-item" to="/">
             Home
-          </Link>
-          <Link className="poppins-regular nav-item" to="/pomodoro">
+          </ProtectedLink>
+          <ProtectedLink className="poppins-regular nav-item" to="/pomodoro">
             Pomodoro
-          </Link>
-          <Link className="poppins-regular nav-item" to="/task">
+          </ProtectedLink>
+          <ProtectedLink className="poppins-regular nav-item" to="/task">
             Task Manager
-          </Link>
-          <Link className="poppins-regular nav-item" to="/shop">
+          </ProtectedLink>
+          <ProtectedLink className="poppins-regular nav-item" to="/shop">
             Shop
-          </Link>
-          <Link className="poppins-regular nav-item" to="/">
+          </ProtectedLink>
+          <ProtectedLink className="poppins-regular nav-item" to="/">
             Settings
-          </Link>
-          <Link className="poppins-regular nav-item" to="/data">
+          </ProtectedLink>
+          <ProtectedLink className="poppins-regular nav-item" to="/data">
             Data
-          </Link>
+          </ProtectedLink>
         </div>
 
         <Routes>

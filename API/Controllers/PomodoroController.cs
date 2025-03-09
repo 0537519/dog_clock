@@ -67,13 +67,25 @@ namespace API.Controllers
             return NoContent();
         }
 
+        // 修改 update-on-unload 接口，支持同时接收 ActualDuration 字段
         [HttpPut("{id}/update-on-unload")]
+        [HttpPost("{id}/update-on-unload")]
         public async Task<IActionResult> UpdateOnUnload(int id, [FromBody] UpdatePomodoroSessionRequest request)
         {
             var session = await _context.pomodoroSessions.FindAsync(id);
             if (session == null) return NotFound();
 
-            session.EndTime = DateTime.Now;
+            // 如果 ActualDuration 存在，则使用它计算 endTime，否则以当前时间作为 endTime
+            if (request.ActualDuration > 0)
+            {
+                session.EndTime = session.StartTime.AddSeconds(request.ActualDuration);
+                if (session.EndTime > DateTime.Now)
+                    session.EndTime = DateTime.Now;
+            }
+            else
+            {
+                session.EndTime = DateTime.Now;
+            }
             session.IsCompleted = request.IsCompleted;
             session.RewardPoints = (int)(session.EndTime - session.StartTime).TotalMinutes * 2;
 
@@ -121,5 +133,6 @@ namespace API.Controllers
     public class UpdatePomodoroSessionRequest
     {
         public bool IsCompleted { get; set; }
+        public int ActualDuration { get; set; }
     }
 }
